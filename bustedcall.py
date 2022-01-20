@@ -11,13 +11,13 @@ FILE="small.csv"
 MASTER="MASTER.SCP"
 
 USEMORSE = True
-MORSEMAXDIST = 5
+MORSEMAXDIST = 6
 ASCIIMAXDIST = 3
 
 WINDOW = 15 # RBN bust buffer size in seconds
 FIFO1 = [] # RBN buffer
 
-FREQMARGIN = 0.3 # Acceptable offset to be considered the same frequency
+FREQMARGIN = 0.2 # Acceptable offset to be considered the same frequency
 
 SPOTS = [] # Spots array
 SCP = [] # Valid callsigns array
@@ -79,11 +79,9 @@ def morse(callsign):
 def levenshtein(validspot, checkspot, freqmargin):
     if abs(validspot.qrg - checkspot.qrg) <= freqmargin:
         if USEMORSE:
-            dist = distance(validspot.morse, checkspot.morse)
+            result = distance(validspot.morse, checkspot.morse)
         else:
-            dist = distance(validspot.dx, checkspot.dx)
-        # dist = distance(validspot.dx, checkspot.dx)
-        result = dist
+            result = distance(validspot.dx, checkspot.dx)
         # print(f'Reference {validspot.dx}@{validspot.qrg} and {checkspot.dx}@{checkspot.qrg} distance is {dist}')
     else:
         result = 99
@@ -101,15 +99,18 @@ class Spot():
         # if not self.valid:
             # print("Call %8s QRG %5.1f Morse \"%s\"" % (self.dx, self.qrg, self.morse))           
        
-# Load the MASTER.SCP database in global array SCP
-
 if __name__ == "__main__":
 
     for i in range(1, len(sys.argv)):
         if sys.argv[i] == "-a":
             USEMORSE = False
+        elif sys.argv[i] == "-h" or sys.argv[i] == "-?":
+            print("Usage: ./bustedcall [-a] filename.csv")
+            exit(0)
         else:
             FILE = sys.argv[i]
+
+    # Load the MASTER.SCP database in global array SCP
 
     call_count = 0
     with open(MASTER) as f:
@@ -185,5 +186,5 @@ if __name__ == "__main__":
                             maxdist = ASCIIMAXDIST
                         if dist <= maxdist:
                             count_bust += 1
-                            print("Busted spot %8s %.0f seconds after correct call and %.1f kHz off (call is %s and distance is %d)" % (check.dx, tdelta, fdelta, spot.dx, dist))
+                            print("Busted spot %7s %2.0fs after correct call and %.1f kHz off (actually %7s with %d distance)" % (check.dx, tdelta, fdelta, spot.dx, dist))
     print("A total of %d busted spots with %s method" % (count_bust, "Morse" if USEMORSE else "ASCII"))
