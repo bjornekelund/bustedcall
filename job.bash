@@ -2,7 +2,7 @@
 ./bustedcall.py -m 2 20211127.csv -a > max2ascii.txt
 ./bustedcall.py -m 3 20211127.csv -a > max3ascii.txt
 ./bustedcall.py -m 5 20211127.csv > max5morse.txt
-./bustedcall.py -m 6 20211127.csv > max5morse.txt
+./bustedcall.py -m 6 20211127.csv > max6morse.txt
 
 ./bustedcall.py -m 2 20211127.csv -a -p > pmax2ascii.txt
 ./bustedcall.py -m 3 20211127.csv -a -p > pmax3ascii.txt
