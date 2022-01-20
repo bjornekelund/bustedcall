@@ -175,7 +175,8 @@ if __name__ == "__main__":
                     SPOTS.append(newspot)
                     spot_count += 1
                     if spot_count % 10000 == 0:
-                        print(f'Building spot array, spot #{spot_count}')
+                        sys.stderr.write(f'Building spot array, spot #{spot_count}\n')
+                        sys.stderr.flush()
     csv_file.close()
     print(f'Processed {spot_count} spots of which {valid_count} are of known good calls.')
         
