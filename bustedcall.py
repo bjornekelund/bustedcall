@@ -10,8 +10,8 @@ FILE="small.csv"
 MASTER="MASTER.SCP"
 
 USEMORSE = True
-MORSEMAXDISTS = [5, 6, 7]
-ASCIIMAXDISTS = [2, 3, 4]
+MORSEMAXDISTS = [4, 5, 6]
+ASCIIMAXDISTS = [1, 2, 3]
 
 WINDOW = 15 # RBN bust buffer size in seconds
 FIFO1 = [] # RBN buffer
@@ -121,13 +121,18 @@ if __name__ == "__main__":
 
     # Load all spots in global array SPOTS
 
+    # Counters
     spot_count = -1
     valid_count = 0
-    ispotter = 0
-    idx = 0
-    idate = 0
-    ifreq = 0
-    imode = 0
+
+    # Indices of the information elements in the CSV file
+    # Set to invalid numbers so we get an error if a field is missing.
+    ispotter = -1
+    idx = -1
+    idate = -1
+    ifreq = -1
+    imode = -1
+    
     print("Reading file %s..." % FILE)
     with open(FILE) as csv_file:
         csv_reader = csv.reader(csv_file, delimiter=',')
@@ -147,8 +152,8 @@ if __name__ == "__main__":
                 # print(f'Spotter is {ispotter}, dx is {idx}, freq is {ifreq}, and date is {idate}')
                 spot_count = 0
             else:
-                if len(row) >= idate and contestband(row[ifreq]) and row[imode] == 'CW':
-                # if len(row) >= idate and row[imode] == 'CW':
+                # if len(row) >= idate and contestband(row[ifreq]) and row[imode] == 'CW':
+                if len(row) >= idate and row[imode] == 'CW':
                     newspot = Spot(row[ispotter], row[idx], row[ifreq], row[idate])
                     if newspot.valid:
                         valid_count += 1
@@ -158,10 +163,14 @@ if __name__ == "__main__":
                         sys.stderr.write(f'Building spot database, spot #{spot_count}\n')
                         sys.stderr.flush()
     csv_file.close()
-    print(f'Processed {spot_count} spots of which {valid_count} are of known good calls')
+    
+    print("Processed %d spots of which %d are of known good calls" % (spot_count, valid_count))
 
     # Now traverse the entire spot array and find busted calls
-    # A busted call is roughly on the same frequency and has a small enough difference to a valid call within the time window
+    # A busted spot is defined as 
+    #   Appearing after the spot of the correct call
+    #   Appearing on roughly  the same frequency 
+    #   Having a distorted version of the correct call
 
     analysis_count = 1
     for showonlymax in (False, True): # Show all and only the worst
@@ -172,10 +181,8 @@ if __name__ == "__main__":
                 dists = ASCIIMAXDISTS
             for maxdist in dists: # For all studied max distances
                 FIFO1 = []
-
                 # Start analysis
-
-                print("---------------")
+                print("-------------------------------------")
                 sys.stderr.write(f'Performing analysis {analysis_count} of {2 * (len(MORSEMAXDISTS) + len(ASCIIMAXDISTS))}\n')
                 sys.stderr.flush()
                 analysis_count += 1
@@ -183,7 +190,7 @@ if __name__ == "__main__":
                 if showonlymax:
                     print("Showing only maximum distance busts")
                 count_bust = 0
-
+                # Process all spots in the database
                 for newspot in SPOTS:
                     FIFO1.append(newspot)
                     # Process all spots at the oldest end of the FIFO that about to expire
@@ -191,13 +198,12 @@ if __name__ == "__main__":
                         spot = FIFO1.pop(0)
                         if spot.valid: # If it is a known callsign
                             for check in FIFO1: # Check for "bad copies" in the FIFO
-            #                    if not check.valid and not check.exposed:
+                                # if not check.valid and not check.exposed:
                                 if not check.exposed:
                                     check.exposed = True # Don't display a bad spot more than once
                                     tdelta = (check.time - spot.time).total_seconds()
                                     fdelta = abs(check.qrg - spot.qrg)
                                     dist = levenshtein(spot, check, FREQMARGIN, metric)
-                                    # print("%s vs %s dist %d" % (spot.dx, check.dx, dist))
                                     if (showonlymax and (dist == maxdist)) or (not showonlymax and (dist > 0 and dist <= maxdist)):
                                         count_bust += 1
                                         print("Busted spot %8s %2.0fs after correct call and %.1f kHz off (actually %8s with %d distance)" % (check.dx, tdelta, fdelta, spot.dx, dist))
