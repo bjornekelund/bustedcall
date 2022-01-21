@@ -207,3 +207,4 @@ if __name__ == "__main__":
                     print("A total of %d busted spots with %s method and distance of less than %d" % (count_bust, metric, maxdist))
                 for spot in SPOTS:
                     spot.exposed = False
+    exit(0)
