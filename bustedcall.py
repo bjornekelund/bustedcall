@@ -10,8 +10,8 @@ FILE="small.csv"
 MASTER="MASTER.SCP"
 
 USEMORSE = True
-MORSEMAXDISTS = [4, 5, 6]
-ASCIIMAXDISTS = [1, 2, 3]
+MORSEMAXDISTS = [5, 6, 7]
+ASCIIMAXDISTS = [2, 3, 4]
 
 WINDOW = 15 # RBN bust buffer size in seconds
 FIFO1 = [] # RBN buffer
@@ -113,7 +113,11 @@ if __name__ == "__main__":
                 VALIDATEDCALLS.append(call)
                 call_count += 1
     f.close()
-    print(f'Loaded {call_count} validated calls.')
+    # print(f'Loaded {call_count} validated calls.')
+
+    sys.stderr.write(f'Loaded {call_count} validated calls\n')
+    sys.stderr.flush()
+
 
     # Load all spots in global array SPOTS
 
@@ -151,16 +155,17 @@ if __name__ == "__main__":
                     SPOTS.append(newspot)
                     spot_count += 1
                     if spot_count % 10000 == 0:
-                        sys.stderr.write(f'Building spot array, spot #{spot_count}\n')
+                        sys.stderr.write(f'Building spot database, spot #{spot_count}\n')
                         sys.stderr.flush()
     csv_file.close()
-    print(f'Processed {spot_count} spots of which {valid_count} are of known good calls.')
+    print(f'Processed {spot_count} spots of which {valid_count} are of known good calls')
 
     # Now traverse the entire spot array and find busted calls
     # A busted call is roughly on the same frequency and has a small enough difference to a valid call within the time window
 
-    for metric in ["Morse", "ASCII"]: # For both methods
-        for showonlymax in (False, True): # Show all and only the worst
+    analysis_count = 1
+    for showonlymax in (False, True): # Show all and only the worst
+        for metric in ["Morse", "ASCII"]: # For both methods
             if metric == "Morse":
                 dists = MORSEMAXDISTS
             else:
@@ -171,8 +176,10 @@ if __name__ == "__main__":
                 # Start analysis
 
                 print("---------------")
+                sys.stderr.write(f'Performing analysis {analysis_count} of {2 * (len(MORSEMAXDISTS) + len(ASCIIMAXDISTS))}\n')
+                sys.stderr.flush()
+                analysis_count += 1
                 print("Starting analysis for %s-based metric with maximum distance of %d" % (metric, maxdist))
-                print("SPOTS has %d entries" % len(SPOTS))
                 if showonlymax:
                     print("Showing only maximum distance busts")
                 count_bust = 0
@@ -193,7 +200,7 @@ if __name__ == "__main__":
                                     # print("%s vs %s dist %d" % (spot.dx, check.dx, dist))
                                     if (showonlymax and (dist == maxdist)) or (not showonlymax and (dist > 0 and dist <= maxdist)):
                                         count_bust += 1
-                                        print("Busted spot %7s %2.0fs after correct call and %.1f kHz off (actually %7s with %d distance)" % (check.dx, tdelta, fdelta, spot.dx, dist))
+                                        print("Busted spot %8s %2.0fs after correct call and %.1f kHz off (actually %8s with %d distance)" % (check.dx, tdelta, fdelta, spot.dx, dist))
                 if showonlymax:
                     print("A total of %d busted spots with %s method and an exact distance of %d" % (count_bust, metric, maxdist))
                 else:
