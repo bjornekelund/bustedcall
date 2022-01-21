@@ -1,7 +1,12 @@
 #!/bin/bash
 #set -x
-#DATES="20211123 20211127 20211128 20220111"
-DATES="20211123 20211127"
+
+if [ "$1" != "" ]; then
+  DATES=$1
+else
+  DATES="20211123 20211127 20211128 20220111"
+fi
+
 for date in $DATES; do
   ZIP="$date.gz"
   CSV="$date.csv"

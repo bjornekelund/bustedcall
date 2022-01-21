@@ -1,11 +1,17 @@
 #!/bin/bash
-echo Fetching data
 
-./getdata.bash
+if [ "$1" != "" ]; then
+  FILE=$1
+else
+  FILE=20211123
+fi
+
+echo Fetching data
+./getdata.bash $FILE
 
 echo Starting analysis
 
-./bustedcall.py 20211127.csv > result.txt
+./bustedcall.py $FILE.csv > result.txt
 
 echo Done. Result is in result.txt
 
