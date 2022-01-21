@@ -195,7 +195,7 @@ if __name__ == "__main__":
                                         count_bust += 1
                                         print("Busted spot %7s %2.0fs after correct call and %.1f kHz off (actually %7s with %d distance)" % (check.dx, tdelta, fdelta, spot.dx, dist))
                 if showonlymax:
-                    print("A total of %d busted spots with %s method and a distance of %d" % (count_bust, metric, maxdist))
+                    print("A total of %d busted spots with %s method and an exact distance of %d" % (count_bust, metric, maxdist))
                 else:
                     print("A total of %d busted spots with %s method and distance of less than %d" % (count_bust, metric, maxdist))
                 for spot in SPOTS:
