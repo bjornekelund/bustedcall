@@ -10,13 +10,13 @@ FILE="small.csv"
 MASTER="MASTER.SCP"
 
 USEMORSE = True
-MORSEMAXDISTS = [4, 5, 6]
+MORSEMAXDISTS = [3, 4, 5]
 ASCIIMAXDISTS = [1, 2, 3]
 
 WINDOW = 15 # RBN bust buffer size in seconds
 FIFO1 = [] # RBN buffer
 
-FREQMARGIN = 0.2 # Acceptable offset to be considered the same frequency
+FREQMARGIN = 0.1 # Maximum acceptable offset to be considered the same frequency
 
 SPOTS = [] # Spots array
 VALIDATEDCALLS = [] # Valid callsigns array
