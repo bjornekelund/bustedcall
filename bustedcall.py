@@ -126,7 +126,7 @@ if __name__ == "__main__":
     valid_count = 0
 
     # Indices of the information elements in the CSV file
-    # Set to invalid numbers so we get an error if a field is missing.
+    # Set to invalid numbers so we crash if a field is missing
     ispotter = -1
     idx = -1
     idate = -1
@@ -190,27 +190,26 @@ if __name__ == "__main__":
                 if showonlymax:
                     print("Showing only maximum distance busts")
                 count_bust = 0
-                # Process all spots in the database
+                # For each spot in the daily archive
                 for newspot in SPOTS:
                     FIFO1.append(newspot)
                     # Process all spots at the oldest end of the FIFO that about to expire
                     while (FIFO1[-1].time - FIFO1[0].time).total_seconds() > WINDOW:
                         spot = FIFO1.pop(0)
                         if spot.valid: # If it is a known callsign
-                            for check in FIFO1: # Check for "bad copies" in the FIFO
-                                # if not check.valid and not check.exposed:
+                            for check in FIFO1: # Scan for busted versions of the known call in the FIFO
                                 if not check.exposed:
-                                    check.exposed = True # Don't display a bad spot more than once
+                                    check.exposed = True # Don't display a busted spot more than once
                                     tdelta = (check.time - spot.time).total_seconds()
                                     fdelta = abs(check.qrg - spot.qrg)
                                     dist = levenshtein(spot, check, FREQMARGIN, metric)
                                     if (showonlymax and (dist == maxdist)) or (not showonlymax and (dist > 0 and dist <= maxdist)):
                                         count_bust += 1
-                                        print("Busted spot %8s %2.0fs after correct call and %.1f kHz off (actually %8s with %d distance)" % (check.dx, tdelta, fdelta, spot.dx, dist))
+                                        print("Busted spot %8s (%8s) with distance %d, %2.0fs after correct call and %.1f kHz off" % (check.dx, spot.dx, dist, tdelta, fdelta))
                 if showonlymax:
                     print("A total of %d busted spots with an exact distance of %d for %s-Levenshtein method" % (count_bust, maxdist, metric))
                 else:
-                    print("A total of %d busted spots with distance of less than %d for %s-Levenshtein method" % (count_bust, maxdist, metric))
+                    print("A total of %d busted spots with distance of maximum %d for %s-Levenshtein method" % (count_bust, maxdist, metric))
                 for spot in SPOTS:
                     spot.exposed = False
     exit(0)
