@@ -10,8 +10,9 @@ FILE="small.csv"
 MASTER="MASTER.SCP"
 
 USEMORSE = True
-MORSEMAXDISTS = [3, 4, 5]
+MORSEMAXDISTS = [4, 5, 6]
 ASCIIMAXDISTS = [1, 2, 3]
+CT1BOHMAXDIST = [10]
 
 WINDOW = 15 # RBN bust buffer size in seconds
 FIFO1 = [] # RBN buffer
@@ -23,42 +24,42 @@ VALIDATEDCALLS = [] # Valid callsigns array
 
 MORSE = {
     "A" : ".- ",
-    "B" : "-...",
-    "C" : "-.-.",
-    "D" : "-..",
-    "E" : ".",
-    "F" : "..-.",
-    "G" : "--.",
-    "H" : "....",
-    "I" : "..",
-    "J" : ".---",
-    "K" : "-.-",
-    "L" : ".-..",
-    "M" : "--",
-    "N" : "-.",
-    "O" : "---",
-    "P" : ".--.",
-    "Q" : "--.-",
-    "R" : ".-.",
-    "S" : "...",
-    "T" : "-",
-    "U" : "..-",
-    "V" : "...-",
-    "W" : ".--",
-    "X" : "-..-",
-    "Y" : "-.--",
-    "Z" : "--..",
-    "0" : "-----",
-    "1" : ".----",
-    "2" : "..---",
-    "3" : "...--",
-    "4" : "....-",
-    "5" : ".....",
-    "6" : "-....",
-    "7" : "--...",
-    "8" : "---..",
-    "9" : "----.",
-    "/" : "-..-.",
+    "B" : "-... ",
+    "C" : "-.-. ",
+    "D" : "-.. ",
+    "E" : ". ",
+    "F" : "..-. ",
+    "G" : "--. ",
+    "H" : ".... ",
+    "I" : ".. ",
+    "J" : ".--- ",
+    "K" : "-.- ",
+    "L" : ".-.. ",
+    "M" : "-- ",
+    "N" : "-. ",
+    "O" : "--- ",
+    "P" : ".--. ",
+    "Q" : "--.-" ,
+    "R" : ".-." ,
+    "S" : "... ",
+    "T" : "- ",
+    "U" : "..- ",
+    "V" : "...- ",
+    "W" : ".-- ",
+    "X" : "-..- ",
+    "Y" : "-.-- ",
+    "Z" : "--.. ",
+    "0" : "----- ",
+    "1" : ".---- ",
+    "2" : "..--- ",
+    "3" : "...-- ",
+    "4" : "....- ",
+    "5" : "..... ",
+    "6" : "-.... ",
+    "7" : "--... ",
+    "8" : "---.. ",
+    "9" : "----. ",
+    "/" : "-..-. ",
 }
 
 def contestband(freqstring):
@@ -77,10 +78,24 @@ def morse(callsign):
 
 def levenshtein(validspot, checkspot, freqmargin, metric):
     if abs(validspot.qrg - checkspot.qrg) <= freqmargin:
-        if metric == "Morse":
+        if metric == "Absolute Morse":
             result = distance(validspot.morse, checkspot.morse)
-        else:
+        elif metric == "Relative Morse":
+            mlen = len(validspot.morse) if len(validspot.morse) > len(checkspot.morse) else len(checkspot.morse)
+            result = int(5.0 * distance(validspot.morse, checkspot.morse) / mlen + 0.5)
+        elif metric == "Absolute ASCII":
             result = distance(validspot.dx, checkspot.dx)
+        elif metric == "Relative ASCII":
+            mlen = len(validspot.dx) if len(validspot.dx) > len(checkspot.dx) else len(checkspot.dx)
+            result = int(10.0 * distance(validspot.dx, checkspot.dx) / mlen + 0.5)
+        elif metric == "CT1BOH":
+            # The CT1BOH metric is actually a "match" and not a "distance" but this is the mathematical equivalent 
+            # when the maximum acceptable distance is 10
+            mlen = len(validspot.dx) if len(validspot.dx) > len(checkspot.dx) else len(checkspot.dx)
+            result = int(24.0 * distance(validspot.dx, checkspot.dx) / mlen)
+        else:
+            exit(1)
+            
         # print(f'Reference {validspot.dx}@{validspot.qrg} and {checkspot.dx}@{checkspot.qrg} distance is {dist}')
     else:
         result = 99
@@ -174,16 +189,21 @@ if __name__ == "__main__":
 
     analysis_count = 1
     for showonlymax in (False, True): # Show all and only the worst
-        for metric in ["Morse", "ASCII"]: # For both methods
-            if metric == "Morse":
+        for metric in ["Absolute Morse", "Absolute ASCII", "CT1BOH"]: # For both methods
+            if "Morse" in metric:
                 dists = MORSEMAXDISTS
-            else:
+            elif "ASCII" in metric:
                 dists = ASCIIMAXDISTS
+            elif "CT1BOH" in metric:
+                dists = CT1BOHMAXDIST
+            else:
+                exit(1)
+                
             for maxdist in dists: # For all studied max distances
                 FIFO1 = []
                 # Start analysis
                 print("-------------------------------------")
-                sys.stderr.write(f'Performing analysis {analysis_count} of {2 * (len(MORSEMAXDISTS) + len(ASCIIMAXDISTS))}\n')
+                sys.stderr.write(f'Performing analysis {analysis_count} of {len(metric) * (len(MORSEMAXDISTS) + len(ASCIIMAXDISTS))}\n')
                 sys.stderr.flush()
                 analysis_count += 1
                 print("Starting analysis for %s-based metric with maximum distance of %d" % (metric, maxdist))
