@@ -203,7 +203,7 @@ if __name__ == "__main__":
                 FIFO1 = []
                 # Start analysis
                 print("-------------------------------------")
-                sys.stderr.write(f'Performing analysis {analysis_count} of {len(metric) * (len(MORSEMAXDISTS) + len(ASCIIMAXDISTS))}\n')
+                sys.stderr.write(f'Performing analysis {analysis_count} of {2 * (len(MORSEMAXDISTS) + len(ASCIIMAXDISTS) + 1)}\n')
                 sys.stderr.flush()
                 analysis_count += 1
                 print("Starting analysis for %s-based metric with maximum distance of %d" % (metric, maxdist))
