@@ -4,9 +4,9 @@ import csv
 from datetime import datetime
 import sys
 
-# FILE="20211123.csv"
+FILE="20211123.csv"
 # FILE="test.csv"
-FILE="small.csv"
+#FILE="small.csv"
 MASTER="MASTER.SCP"
 
 USEMORSE = True
@@ -215,12 +215,16 @@ if __name__ == "__main__":
                     FIFO1.append(newspot)
                     # Process all spots at the oldest end of the FIFO that about to expire
                     while (FIFO1[-1].time - FIFO1[0].time).total_seconds() > WINDOW:
+                        # Pop oldest spot
                         spot = FIFO1.pop(0)
                         if spot.valid: # If it is a known callsign
-                            for check in FIFO1: # Scan for busted versions of the known call in the FIFO
+                            for check in reversed(FIFO1[:-1]): # Scan for busted versions of the known call in the FIFO
                                 if not check.exposed:
                                     check.exposed = True # Don't display a busted spot more than once
                                     tdelta = (check.time - spot.time).total_seconds()
+                                    # ctime = check.time.strftime("%H:%M:%S")
+                                    # stime = spot.time.strftime("%H:%M:%S")
+                                    # print("%s time %s, %s time %s" % (check.dx, ctime, spot.dx, stime))
                                     fdelta = abs(check.qrg - spot.qrg)
                                     dist = levenshtein(spot, check, FREQMARGIN, metric)
                                     if (showonlymax and (dist == maxdist)) or (not showonlymax and (dist > 0 and dist <= maxdist)):
