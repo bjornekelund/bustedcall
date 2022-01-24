@@ -4,9 +4,9 @@ import csv
 from datetime import datetime
 import sys
 
-FILE="20211123.csv"
+#FILE="20211123.csv"
 # FILE="test.csv"
-#FILE="small.csv"
+FILE="small.csv"
 MASTER="MASTER.SCP"
 
 USEMORSE = True
@@ -218,7 +218,7 @@ if __name__ == "__main__":
                         # Pop oldest spot
                         spot = FIFO1.pop(0)
                         if spot.valid: # If it is a known callsign
-                            for check in reversed(FIFO1[:-1]): # Scan for busted versions of the known call in the FIFO
+                            for check in FIFO1[:-1]: # Scan for busted versions of the known call in the FIFO
                                 if not check.exposed:
                                     check.exposed = True # Don't display a busted spot more than once
                                     tdelta = (check.time - spot.time).total_seconds()
