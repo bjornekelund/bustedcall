@@ -10,7 +10,7 @@ FILE="small.csv"
 MASTER="MASTER.SCP"
 
 USEMORSE = True
-MORSEMAXDISTS = [4, 5, 6]
+MORSEMAXDISTS = [2, 3, 4]
 ASCIIMAXDISTS = [1, 2, 3]
 CT1BOHMAXDIST = [10]
 
@@ -23,43 +23,43 @@ SPOTS = [] # Spots array
 VALIDATEDCALLS = [] # Valid callsigns array
 
 MORSE = {
-    "A" : ".- ",
-    "B" : "-... ",
-    "C" : "-.-. ",
-    "D" : "-.. ",
-    "E" : ". ",
-    "F" : "..-. ",
-    "G" : "--. ",
-    "H" : ".... ",
-    "I" : ".. ",
-    "J" : ".--- ",
-    "K" : "-.- ",
-    "L" : ".-.. ",
-    "M" : "-- ",
-    "N" : "-. ",
-    "O" : "--- ",
-    "P" : ".--. ",
+    "A" : ".-",
+    "B" : "-...",
+    "C" : "-.-.",
+    "D" : "-..",
+    "E" : ".",
+    "F" : "..-.",
+    "G" : "--.",
+    "H" : "....",
+    "I" : "..",
+    "J" : ".---",
+    "K" : "-.-",
+    "L" : ".-..",
+    "M" : "--",
+    "N" : "-.",
+    "O" : "---",
+    "P" : ".--.",
     "Q" : "--.-" ,
     "R" : ".-." ,
-    "S" : "... ",
-    "T" : "- ",
-    "U" : "..- ",
-    "V" : "...- ",
-    "W" : ".-- ",
-    "X" : "-..- ",
-    "Y" : "-.-- ",
-    "Z" : "--.. ",
-    "0" : "----- ",
-    "1" : ".---- ",
-    "2" : "..--- ",
-    "3" : "...-- ",
-    "4" : "....- ",
-    "5" : "..... ",
-    "6" : "-.... ",
-    "7" : "--... ",
-    "8" : "---.. ",
-    "9" : "----. ",
-    "/" : "-..-. ",
+    "S" : "...",
+    "T" : "-",
+    "U" : "..-",
+    "V" : "...-",
+    "W" : ".--",
+    "X" : "-..-",
+    "Y" : "-.--",
+    "Z" : "--..",
+    "0" : "-----",
+    "1" : ".----",
+    "2" : "..---",
+    "3" : "...--",
+    "4" : "....-",
+    "5" : ".....",
+    "6" : "-....",
+    "7" : "--...",
+    "8" : "---..",
+    "9" : "----.",
+    "/" : "-..-.",
 }
 
 def contestband(freqstring):
@@ -95,7 +95,7 @@ def levenshtein(validspot, checkspot, freqmargin, metric):
             result = int(24.0 * distance(validspot.dx, checkspot.dx) / mlen)
         else:
             exit(1)
-            
+
         # print(f'Reference {validspot.dx}@{validspot.qrg} and {checkspot.dx}@{checkspot.qrg} distance is {dist}')
     else:
         result = 99
@@ -147,7 +147,7 @@ if __name__ == "__main__":
     idate = -1
     ifreq = -1
     imode = -1
-    
+
     print("Reading file %s..." % FILE)
     with open(FILE) as csv_file:
         csv_reader = csv.reader(csv_file, delimiter=',')
@@ -178,13 +178,13 @@ if __name__ == "__main__":
                         sys.stderr.write(f'Building spot database, spot #{spot_count}\n')
                         sys.stderr.flush()
     csv_file.close()
-    
+
     print("Processed %d spots of which %d are of known good calls" % (spot_count, valid_count))
 
     # Now traverse the entire spot array and find busted calls
-    # A busted spot is defined as 
+    # A busted spot is defined as
     #   Appearing after the spot of the correct call
-    #   Appearing on roughly  the same frequency 
+    #   Appearing on roughly  the same frequency
     #   Having a distorted version of the correct call
 
     analysis_count = 1
@@ -198,7 +198,7 @@ if __name__ == "__main__":
                 dists = CT1BOHMAXDIST
             else:
                 exit(1)
-                
+
             for maxdist in dists: # For all studied max distances
                 FIFO1 = []
                 # Start analysis
@@ -220,14 +220,14 @@ if __name__ == "__main__":
                         if spot.valid: # If it is a known callsign
                             for check in FIFO1[:-1]: # Scan for busted versions of the known call in the FIFO
                                 if not check.exposed:
-                                    check.exposed = True # Don't display a busted spot more than once
-                                    tdelta = (check.time - spot.time).total_seconds()
                                     # ctime = check.time.strftime("%H:%M:%S")
                                     # stime = spot.time.strftime("%H:%M:%S")
                                     # print("%s time %s, %s time %s" % (check.dx, ctime, spot.dx, stime))
-                                    fdelta = abs(check.qrg - spot.qrg)
                                     dist = levenshtein(spot, check, FREQMARGIN, metric)
                                     if (showonlymax and (dist == maxdist)) or (not showonlymax and (dist > 0 and dist <= maxdist)):
+                                        check.exposed = True # Don't display a busted spot more than once
+                                        fdelta = abs(check.qrg - spot.qrg)
+                                        tdelta = (check.time - spot.time).total_seconds()
                                         count_bust += 1
                                         print("Busted spot %8s (%8s) with distance %d, %2.0fs after correct call and %.1f kHz off" % (check.dx, spot.dx, dist, tdelta, fdelta))
                 if showonlymax:

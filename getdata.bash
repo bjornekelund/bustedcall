@@ -13,7 +13,7 @@ for date in $DATES; do
   rm -f $CSV $ZIP
   wget --quiet --no-hsts http://reversebeacon.net/raw_data/dl.php?f=$date -O $ZIP
   gunzip < $ZIP > $CSV
-  echo "Downloaded" $CSV
+  echo "Downloaded" $CSV "with" `wc -l $CSV`
 done
 rm -f MASTER.SCP *.gz
 wget --quiet --no-hsts http://www.supercheckpartial.com/MASTER.SCP
