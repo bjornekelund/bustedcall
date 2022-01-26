@@ -10,7 +10,7 @@ FILE="small.csv"
 MASTER="MASTER.SCP"
 
 USEMORSE = True
-MORSEMAXDISTS = [2, 3, 4]
+MORSEMAXDISTS = [3, 4, 5]
 ASCIIMAXDISTS = [1, 2, 3]
 CT1BOHMAXDIST = [10]
 
@@ -219,7 +219,7 @@ if __name__ == "__main__":
                         spot = FIFO1.pop(0)
                         if spot.valid: # If it is a known callsign
                             for check in FIFO1[:-1]: # Scan for busted versions of the known call in the FIFO
-                                if not check.exposed:
+                                if not check.exposed and not check.valid:
                                     # ctime = check.time.strftime("%H:%M:%S")
                                     # stime = spot.time.strftime("%H:%M:%S")
                                     # print("%s time %s, %s time %s" % (check.dx, ctime, spot.dx, stime))
